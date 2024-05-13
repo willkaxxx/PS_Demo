@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ua.oleksii.shchetinin.ps.demo.dto.request.RegisterUserDto;
+import ua.oleksii.shchetinin.ps.demo.mapper.UserMapper;
 import ua.oleksii.shchetinin.ps.demo.model.User;
 import ua.oleksii.shchetinin.ps.demo.repository.UserRepository;
 
@@ -19,13 +20,11 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final UserMapper userMapper;
 
     public User signup(RegisterUserDto input) {
-        User user = User.builder()
-                .username(input.getUsername())
-                .password(passwordEncoder.encode(input.getPassword()))
-                .build();
-
+        User user = userMapper.dtoToModel(input);
+        user.setPassword(passwordEncoder.encode(input.getPassword()));
         return userRepository.save(user);
     }
 
