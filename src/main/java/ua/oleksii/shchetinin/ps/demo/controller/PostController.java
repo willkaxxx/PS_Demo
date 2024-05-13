@@ -1,6 +1,7 @@
 package ua.oleksii.shchetinin.ps.demo.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/posts")
 @RequiredArgsConstructor
+@Log4j2
 public class PostController {
 
     private final PostService postService;
@@ -38,12 +40,13 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<List<Post>> addPost(@AuthenticationPrincipal User author, @RequestBody CreatePostDto createPostDto) {
+    public ResponseEntity<Post> addPost(@AuthenticationPrincipal User author, @RequestBody CreatePostDto createPostDto) {
         var savedPost = postService.addPost(Post.builder()
                 .authorUsername(author.getUsername())
                 .postText(createPostDto.getPostText())
                 .build());
-        return ResponseEntity.ok(List.of(savedPost));
+        log.info("Post {} added", savedPost);
+        return ResponseEntity.ok(savedPost);
     }
 
     @PutMapping("/{id}")
@@ -53,18 +56,21 @@ public class PostController {
                         .postText(createPostDto.getPostText())
                         .build(),
                 user);
+        log.info("Post {} updated", updatedPost);
         return ResponseEntity.ok(updatedPost);
     }
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Like> likePost(@AuthenticationPrincipal User user, @PathVariable(value = "id") String postId) {
         var like = likeService.like(user.getUsername(), postId);
+        log.info("Post {} liked by {}", postId, user.getUsername());
         return ResponseEntity.ok(like);
     }
 
     @DeleteMapping("/{id}/like")
     public ResponseEntity<String> unlikePost(@AuthenticationPrincipal User user, @PathVariable(value = "id") String postId) {
         likeService.removeLike(user.getUsername(), postId);
+        log.info("Post {} unliked by {}", postId, user.getUsername());
         return ResponseEntity.ok("Like removed");
     }
 
@@ -75,6 +81,7 @@ public class PostController {
                 .postId(postId)
                 .text(addCommentDto.getText())
                 .build());
+        log.info("Post {} commented by {}", postId, user.getUsername());
         return ResponseEntity.ok(comment);
     }
 
@@ -87,18 +94,21 @@ public class PostController {
     @PostMapping("/favorites")
     public ResponseEntity<UserResponseDto> addPostToFavorite(@AuthenticationPrincipal User user, @RequestBody FavoritePostDto favoritePostDto) {
         var updatedUser = userService.addPostToFavorite(user, favoritePostDto.getPostId());
+        log.info("User {} added post {} to favorite", user.getUsername(), favoritePostDto);
         return ResponseEntity.ok(userMapper.userToDto(updatedUser));
     }
 
     @DeleteMapping("/favorites")
     public ResponseEntity<UserResponseDto> deletePostToFavorite(@AuthenticationPrincipal User user, @RequestBody FavoritePostDto favoritePostDto) {
         var updatedUser = userService.deletePostFromFavorites(user, favoritePostDto.getPostId());
+        log.info("User {} removed post {} from favorite", user.getUsername(), favoritePostDto);
         return ResponseEntity.ok(userMapper.userToDto(updatedUser));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePost(@AuthenticationPrincipal User user, @PathVariable(value = "id") String postId) {
         postService.deletePost(postId, user);
+        log.info("Post {} was deleted by {}", postId, user.getUsername());
         return ResponseEntity.ok("Post with id:%s was deleted".formatted(postId));
     }
 

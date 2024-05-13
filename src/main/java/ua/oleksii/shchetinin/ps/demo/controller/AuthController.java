@@ -1,6 +1,7 @@
 package ua.oleksii.shchetinin.ps.demo.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.oleksii.shchetinin.ps.demo.dto.request.RegisterUserDto;
@@ -14,6 +15,7 @@ import ua.oleksii.shchetinin.ps.demo.service.security.JwtService;
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
+@Log4j2
 public class AuthController {
 
     private final JwtService jwtService;
@@ -24,7 +26,9 @@ public class AuthController {
     public ResponseEntity<UserResponseDto> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
 
-        return ResponseEntity.ok(userMapper.userToDto(registeredUser));
+        UserResponseDto userResponseDto = userMapper.userToDto(registeredUser);
+        log.info("User {} signed up", userResponseDto);
+        return ResponseEntity.ok(userResponseDto);
     }
 
     @PostMapping("/login")
@@ -40,7 +44,7 @@ public class AuthController {
                 .token(jwtToken)
                 .expiresIn(jwtService.getExpirationTime())
                 .build();
-
+        log.info("User {} logged in", authenticatedUser.getUsername());
         return ResponseEntity.ok(loginResponse);
     }
 }

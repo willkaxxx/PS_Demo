@@ -1,6 +1,8 @@
 package ua.oleksii.shchetinin.ps.demo.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ua.oleksii.shchetinin.ps.demo.Utils;
@@ -24,6 +26,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -44,9 +47,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(User user) {
         User savedUser = getUserByUsername(user.getUsername());
-        return userRepository.save(savedUser.toBuilder()
+        User save = userRepository.save(savedUser.toBuilder()
                 .email(user.getEmail())
                 .build());
+        log.info("User {} saved", user);
+        return save;
     }
 
     @Override
