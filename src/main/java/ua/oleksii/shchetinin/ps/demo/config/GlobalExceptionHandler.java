@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ua.oleksii.shchetinin.ps.demo.exception.PostNotFoundException;
 import ua.oleksii.shchetinin.ps.demo.exception.SelfSubscribeException;
+import ua.oleksii.shchetinin.ps.demo.exception.UserAlreadyExistsException;
 
 import java.util.Optional;
 
@@ -27,9 +28,15 @@ public class GlobalExceptionHandler {
 
             return errorDetail;
         }
+
         if (exception instanceof SelfSubscribeException) {
             errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
             errorDetail.setProperty("description", "You should not subscribe to yourself");
+        }
+
+        if (exception instanceof UserAlreadyExistsException) {
+            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
+            errorDetail.setProperty("description", "User is already exists");
         }
 
         if (exception instanceof AuthenticationException) {

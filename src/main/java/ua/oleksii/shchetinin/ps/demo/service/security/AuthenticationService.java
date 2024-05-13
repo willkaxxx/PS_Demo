@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ua.oleksii.shchetinin.ps.demo.dto.request.RegisterUserDto;
+import ua.oleksii.shchetinin.ps.demo.exception.UserAlreadyExistsException;
 import ua.oleksii.shchetinin.ps.demo.mapper.UserMapper;
 import ua.oleksii.shchetinin.ps.demo.model.User;
 import ua.oleksii.shchetinin.ps.demo.repository.UserRepository;
@@ -23,6 +24,9 @@ public class AuthenticationService {
     private final UserMapper userMapper;
 
     public User signup(RegisterUserDto input) {
+        if(userRepository.existsByUsername(input.getUsername())) {
+            throw new UserAlreadyExistsException("User %s is already exists".formatted(input.getUsername()));
+        }
         User user = userMapper.dtoToModel(input);
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         return userRepository.save(user);
